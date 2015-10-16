@@ -21,8 +21,7 @@ vicious.contrib = require("vicious.contrib")
 beautiful = require("beautiful")
 -- Wibox
 wibox = require("wibox")
---APW = require("apw/widget")
---require("volume")
+local cal = require("utils.cal")
 
 local menubar = require("menubar")
 -- }}}
@@ -251,6 +250,9 @@ vicious.register(datewidget, vicious.widgets.date, "%b %d, %R", 60)
 datewidget:buttons(awful.util.table.join(
   awful.button({ }, 1, function () exec("pylendar.py") end)
 ))
+
+cal.register(datewidget)
+
 -- }}}
 
 -- {{{ System tray
