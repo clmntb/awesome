@@ -12,9 +12,8 @@ theme.wallpaper_cmd = { "/usr/bin/nitrogen --restore" }
 --theme.wallpaper_cmd = { "awsetbg /usr/share/awesome/themes/zenburn/zenburn-background.png" }
 -- }}}
 
-
 -- {{{ Styles
-theme.font      = "Profont 8"
+theme.font      = "Profont 9"
 
 -- {{{ Colors
 theme.fg_normal = "#DCDCCC"
