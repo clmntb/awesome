@@ -21,6 +21,10 @@ vicious.contrib = require("vicious.contrib")
 beautiful = require("beautiful")
 -- Wibox
 wibox = require("wibox")
+--APW = require("apw/widget")
+--require("volume")
+
+local menubar = require("menubar")
 -- }}}
 
 
@@ -38,9 +42,12 @@ beautiful.init(home .. "/.config/awesome/zenburn.lua")
 -- This is used later as the default terminal and editor to run.
 -- A.Tabou: Increase default font size for all terminals
 -- terminal = "xterm -fg white -bg black -fn -*-fixed-medium-*-*-*-14-*
-terminal = "xterm -fg white -bg black -sl 32000"
+terminal = "xterm -fg black -bg white -sl 32000"
+menubar.utils.terminal = terminal
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
+
+menubar.menu_gen.all_menu_dirs = { "/usr/share/applications/", "/usr/local/share/applications", "~/.local/share/applications", "/opt" }
 
 -- Window management layouts
 layouts = {
@@ -56,7 +63,7 @@ layouts = {
 
 -- {{{ Tags
 tags = {
-  names  = { "term", "dev", "web", "mail", "im", "cloud", 7, "rss", "media" },
+  names  = { "term", "web", "irc", "vm", "explorer", "pentest", 7, "rss", "media" },
   layout = { layouts[1], layouts[1], layouts[1], layouts[1], layouts[1],
              layouts[1], layouts[1], layouts[1], layouts[1]
 }}
@@ -113,17 +120,17 @@ vicious.register(batwidget, vicious.widgets.bat, "$1$2%", 61, "BAT0")
 -- }}}
 
 -- {{{ Memory usage
-memicon = wibox.widget.imagebox()
-memicon:set_image(beautiful.widget_mem)
+--memicon = wibox.widget.imagebox()
+--memicon:set_image(beautiful.widget_mem)
 -- Initialize widget
-membar = awful.widget.progressbar()
+--membar = awful.widget.progressbar()
 -- Progressbar properties
-membar:set_vertical(true):set_ticks(true)
-membar:set_height(12):set_width(8):set_ticks_size(2)
-membar:set_background_color(beautiful.fg_off_widget)
-membar:set_color(gradient_colour)
+--membar:set_vertical(true):set_ticks(true)
+--membar:set_height(12):set_width(8):set_ticks_size(2)
+--membar:set_background_color(beautiful.fg_off_widget)
+--membar:set_color(gradient_colour)
 -- Register widget
-vicious.register(membar, vicious.widgets.mem, "$1", 13)
+--vicious.register(membar, vicious.widgets.mem, "$1", 13)
 -- }}}
 
 -- {{{ File system usage
@@ -162,9 +169,10 @@ upicon:set_image(beautiful.widget_netup)
 netwidget = wibox.widget.textbox()
 -- Register widget
 vicious.register(netwidget, vicious.widgets.net, '<span color="'
-  .. beautiful.fg_netdn_widget ..'">${eth0 down_kb}</span> <span color="'
-  .. beautiful.fg_netup_widget ..'">${eth0 up_kb}</span>', 3)
+  .. beautiful.fg_netdn_widget ..'">${wlan0 down_kb}</span> <span color="'
+  .. beautiful.fg_netup_widget ..'">${wlan0 up_kb}</span>', 3)
 -- }}}
+
 
 -- {{{ Mail subject
 -- mailicon = wibox.widget.imagebox()
@@ -207,6 +215,7 @@ vicious.register(netwidget, vicious.widgets.net, '<span color="'
 -- -- }}}
 
 -- {{{ Volume level
+
 volicon = wibox.widget.imagebox()
 volicon:set_image(beautiful.widget_vol)
 -- Initialize widgets
@@ -219,13 +228,13 @@ volbar:set_background_color(beautiful.fg_off_widget)
 volbar:set_color(gradient_colour)
 vicious.cache(vicious.widgets.volume)
 -- Register widgets
-vicious.register(volbar,    vicious.widgets.volume,  "$1",  2, "PCM")
-vicious.register(volwidget, vicious.widgets.volume, " $1%", 2, "PCM")
+vicious.register(volbar,    vicious.widgets.volume,  "$1",  2, "Master")
+vicious.register(volwidget, vicious.widgets.volume, " $1%", 2, "Master")
 -- Register buttons
 volbar:buttons(awful.util.table.join(
    awful.button({ }, 1, function () exec("kmix") end),
-   awful.button({ }, 4, function () exec("amixer -q set PCM 2dB+", false) end),
-   awful.button({ }, 5, function () exec("amixer -q set PCM 2dB-", false) end)
+   awful.button({ }, 4, function () exec("amixer -D pulse -q set Master 5%+", false) end),
+   awful.button({ }, 5, function () exec("amixer -D pulse -q set Master 5%-", false) end)
 )) -- Register assigned buttons
 volwidget:buttons(volbar:buttons())
 -- }}}
@@ -236,7 +245,8 @@ dateicon:set_image(beautiful.widget_date)
 -- Initialize widget
 datewidget = wibox.widget.textbox()
 -- Register widget
-vicious.register(datewidget, vicious.widgets.date, "%R ", 61)
+vicious.register(datewidget, vicious.widgets.date, "%b %d, %R", 60)
+--vicious.register(datewidget, vicious.widgets.date, "%R ", 61)
 -- Register buttons
 datewidget:buttons(awful.util.table.join(
   awful.button({ }, 1, function () exec("pylendar.py") end)
@@ -279,7 +289,7 @@ for s = 1, screen.count() do
 
     -- Create the wibox
     mywibox[s] = awful.wibox({      screen = s,
-        fg = beautiful.fg_normal, height = 12,
+        fg = beautiful.fg_normal, height = 18,
         bg = beautiful.bg_normal, position = "top",
         border_color = beautiful.border_focus,
         border_width = beautiful.border_width
@@ -318,8 +328,8 @@ for s = 1, screen.count() do
         memicon, membar, separator,
         fsicon, fs.r, fs.h, fs.s, fs.b, separator,
         dnicon, netwidget, upicon, separator,
-        volicon, volbar, volwidget, separator,
-        dateicon, datewidget
+        --volicon, volbar, volwidget, separator,
+        dateicon, datewidget, separator
     }
 
     local right_layout = wibox.layout.fixed.horizontal()
@@ -359,6 +369,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
     awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
+
+    awful.key({ modkey,		  }, "p", function () menubar.show() end),
 
     awful.key({ modkey,           }, "j",
         function ()
@@ -400,6 +412,19 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
 
+    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("slock") end),
+
+    awful.key({ modkey, "Shift" }, "o", 
+	function (c) 
+        	local currenttag = awful.tag.getidx()
+        	local nextscreen = mouse.screen + 1
+        	if mouse.screen == screen.count() then
+            		nextscreen = mouse.screen - 1
+        	end
+        	awful.client.movetotag(tags[nextscreen][currenttag],c)
+       	 	awful.tag.viewonly(tags[nextscreen][currenttag])
+    	end),
+
     awful.key( -- restore minimized windows
         {modkey, "Shift"}, "n",
         function ()
@@ -419,6 +444,13 @@ globalkeys = awful.util.table.join(
 
     -- Prompt
     awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end),
+
+    awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
+    awful.key({ "Control" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -u '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
+    awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
+
+    awful.key({ modkey }, "e", function () awful.util.spawn("nautilus") end),
+    awful.key({ modkey }, "g", function () awful.util.spawn("gedit") end),
 
     awful.key({ modkey }, "x",
               function ()
@@ -444,9 +476,14 @@ clientkeys = awful.util.table.join(
             c.maximized_vertical   = not c.maximized_vertical
         end),
 
-    -- Multimedia keys
-    awful.key({ }, "XF86AudioRaiseVolume", function () awful.util.spawn("amixer -q set PCM 2dB+", false) end),
-    awful.key({ }, "XF86AudioLowerVolume", function () awful.util.spawn("amixer -q set PCM 2dB-", false) end)
+   -- Configure the hotkeys.
+   awful.key({ }, "XF86AudioRaiseVolume",  function ()
+       awful.util.spawn("amixer -D pulse set Master 5%+", false) end),
+   awful.key({ }, "XF86AudioLowerVolume",  function ()
+       awful.util.spawn("amixer -D pulse set Master 5%-", false) end),
+   awful.key({ }, "XF86AudioMute", function ()
+       awful.util.spawn("amixer -D pulse set Master 1+ toggle", false) end)
+
 )
 
 -- Compute the maximum number of digit we need, limited to 9
@@ -506,10 +543,18 @@ awful.rules.rules = {
       border_width = beautiful.border_width,
       border_color = beautiful.border_normal }
     },
-    { rule = { class = "Firefox",  instance = "firefox" },
-      properties = { tag = tags[screen.count()][3] } },
+    { rule = { class = "Firefox" },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][6],c) end },
     { rule = { class = "Vim",    instance = "vim" },
-      properties = { tag = tags[screen.count()][2] } },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][1],c) end },
+    { rule = { class = "chromium" },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][2],c) end },
+    { rule = { class = "Hexchat", instance = "hexchat" },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][3],c) end },
+    { rule = { class = "Pcmanfm" },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][5],c) end },
+    { rule = { class = "VirtualBox" },
+      callback = function(c) awful.client.movetotag(tags[mouse.screen][4],c) end },
     { rule = { class = "Vim",    instance = "_Remember_" },
       properties = { floating = true }, callback = awful.titlebar.add  },
     { rule = { class = "Xmessage", instance = "xmessage" },
@@ -591,7 +636,7 @@ end
 autorun = true
 autorunApps =
 {
-    "nitrogen --set-auto .config/awesome/Hire_a_DOG_by_shahjee2.png",
+    "nitrogen --set-zoom-fill .config/awesome/background.jpg",
     "autocutsel -selection CLIPBOARD -fork",
     "autocutsel -selection PRIMARY -fork"
 }
@@ -601,3 +646,31 @@ if autorun then
                 awful.util.spawn(app)
         end
 end
+
+function spawn_once(command, class, tag) 
+	-- create move callback
+  	local callback 
+  	callback = function(c) 
+    		if c.class == class then 
+      			awful.client.movetotag(tag, c) 
+      			client.remove_signal("manage", callback) 
+    		end 
+  	end 
+  	client.add_signal("manage", callback) 
+  	-- now check if not already running!     
+  	local findme = command
+  	local firstspace = findme:find(" ")
+  	if firstspace then
+    		findme = findme:sub(0, firstspace-1)
+	end
+	-- finally run it
+	awful.util.spawn_with_shell("pgrep -u $USER -x .*" .. findme .. ".* > /dev/null || (" .. command .. ")")
+end
+
+spawn_once("chromium","Chromium","web")
+spawn_once("hexchat","Hexchat","irc")
+spawn_once("pcmanfm","Pcmanfm","explorer")
+
+awful.util.spawn_with_shell("pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh")
+awful.util.spawn_with_shell("pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet")
+awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix")
