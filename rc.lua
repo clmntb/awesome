@@ -118,20 +118,6 @@ vicious.register(batwidget, vicious.widgets.bat, "$1$2%", 61, "BAT0")
 -- vicious.register(batwidget, vicious.contrib.batproc, "$1$2%", 61, "BAT0")
 -- }}}
 
--- {{{ Memory usage
---memicon = wibox.widget.imagebox()
---memicon:set_image(beautiful.widget_mem)
--- Initialize widget
---membar = awful.widget.progressbar()
--- Progressbar properties
---membar:set_vertical(true):set_ticks(true)
---membar:set_height(12):set_width(8):set_ticks_size(2)
---membar:set_background_color(beautiful.fg_off_widget)
---membar:set_color(gradient_colour)
--- Register widget
---vicious.register(membar, vicious.widgets.mem, "$1", 13)
--- }}}
-
 -- {{{ File system usage
 fsicon = wibox.widget.imagebox()
 fsicon:set_image(beautiful.widget_fs)
@@ -168,50 +154,9 @@ upicon:set_image(beautiful.widget_netup)
 netwidget = wibox.widget.textbox()
 -- Register widget
 vicious.register(netwidget, vicious.widgets.net, '<span color="'
-  .. beautiful.fg_netdn_widget ..'">${wlan0 down_kb}</span> <span color="'
-  .. beautiful.fg_netup_widget ..'">${wlan0 up_kb}</span>', 3)
+  .. beautiful.fg_netdn_widget ..'">${enp0s3 down_kb}</span> <span color="'
+  .. beautiful.fg_netup_widget ..'">${enp0s3 up_kb}</span>', 3)
 -- }}}
-
-
--- {{{ Mail subject
--- mailicon = wibox.widget.imagebox()
--- mailicon:set_image(beautiful.widget_mail)
--- Initialize widget
--- mailwidget = wibox.widget.textbox()
--- Register widget
--- vicious.register(mailwidget, vicious.widgets.mbox, "$1", 181, {home .. "/mail/Inbox", 15})
--- Register buttons
--- mailwidget:buttons(awful.util.table.join(
---   awful.button({ }, 1, function () exec("urxvt -T Alpine -e alpine_exp") end)
--- ))
--- }}}
-
--- -- {{{ Org-mode agenda
--- orgicon = wibox.widget.imagebox()
--- orgicon:set_image(beautiful.widget_org)
--- -- Initialize widget
--- orgwidget = wibox.widget.textbox()
--- -- Configure widget
--- local orgmode = {
---   files = { home.."/.org/computers.org",
---     home.."/.org/index.org", home.."/.org/personal.org",
---   },
---   color = {
---     past   = '<span color="'..beautiful.fg_urgent..'">',
---     today  = '<span color="'..beautiful.fg_normal..'">',
---     soon   = '<span color="'..beautiful.fg_widget..'">',
---     future = '<span color="'..beautiful.fg_netup_widget..'">'
--- }} -- Register widget
--- vicious.register(orgwidget, vicious.widgets.org,
---   orgmode.color.past..'$1</span>-'..orgmode.color.today .. '$2</span>-' ..
---   orgmode.color.soon..'$3</span>-'..orgmode.color.future.. '$4</span>', 601,
---   orgmode.files
--- ) -- Register buttons
--- orgwidget:buttons(awful.util.table.join(
---   awful.button({ }, 1, function () exec("emacsclient --eval '(org-agenda-list)'") end),
---   awful.button({ }, 3, function () exec("emacsclient --eval '(make-remember-frame)'") end)
--- ))
--- -- }}}
 
 -- {{{ Volume level
 
@@ -255,11 +200,6 @@ cal.register(datewidget)
 
 -- }}}
 
--- {{{ System tray
--- systray = wibox.widget.systray()
--- }}}
--- }}}
-
 -- {{{ Wibox initialisation
 mywibox     = {}
 promptbox = {}
@@ -297,24 +237,6 @@ for s = 1, screen.count() do
         border_width = beautiful.border_width
     })
 
-    -- Add widgets to the wibox
-    --wibox[s].widgets = {
-    --    {   taglist[s], layoutbox[s], separator, promptbox[s],
-    --        ["layout"] = awful.widget.layout.horizontal.leftright
-    --    },
-    --    s == screen.count() and systray or nil,
-    --    separator, datewidget, dateicon,
-    --    separator, volwidget,  volbar.widget, volicon,
-    --    -- separator, orgwidget,  orgicon,
-    --    -- separator, mailwidget, mailicon,
-    --    separator, upicon,     netwidget, dnicon,
-    --    separator, fs.b.widget, fs.s.widget, fs.h.widget, fs.r.widget, fsicon,
-    --    separator, membar.widget, memicon,
-    --    separator, batwidget, baticon,
-    --    separator, tzswidget, cpugraph.widget, cpuicon,
-    --    separator, ["layout"] = awful.widget.layout.horizontal.rightleft
-    -- }
-
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
     left_layout:add(taglist[s])
@@ -348,7 +270,6 @@ for s = 1, screen.count() do
 
     mywibox[s]:set_widget(layout)
 end
--- }}}
 -- }}}
 
 
@@ -607,8 +528,6 @@ end)
 -- }}}
 
 -- {{{ Focus signal handlers
--- client.connect_signal("focus",   function (c) c.border_color = beautiful.border_focus  end)
--- client.connect_signal("unfocus", function (c) c.border_color = beautiful.border_normal end)
 client.connect_signal("focus", function(c)
                               c.border_color = beautiful.border_focus
                               c.opacity = 1
@@ -676,3 +595,4 @@ spawn_once("pcmanfm","Pcmanfm","explorer")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix")
+awful.util.spawn_with_shell("/usr/bin/VBoxClient-all")
