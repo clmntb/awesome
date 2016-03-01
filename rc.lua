@@ -50,9 +50,9 @@ menubar.menu_gen.all_menu_dirs = { "/usr/share/applications/", "/usr/local/share
 
 -- Window management layouts
 layouts = {
+  awful.layout.suit.fair,        -- 3
   awful.layout.suit.tile,        -- 1
   awful.layout.suit.tile.bottom, -- 2
-  awful.layout.suit.fair,        -- 3
   awful.layout.suit.max,         -- 4
   awful.layout.suit.magnifier,   -- 5
   awful.layout.suit.floating     -- 6
@@ -108,13 +108,23 @@ vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
 vicious.register(tzswidget, vicious.widgets.thermal, " $1C", 19, {"thermal_zone1", "sys"})
 -- }}}
 
+-- {{{ RAM usage
+ramicon = wibox.widget.imagebox()
+ramicon:set_image(beautiful.widget_mem)
+ramgraph = awful.widget.graph()
+ramgraph:set_width(40):set_height(14)
+ramgraph:set_background_color(beautiful.fg_off_widget)
+ramgraph:set_color(gradient_color)
+vicious.register(ramgraph, vicious.widgets.mem, "$1")
+--- }}}
+
 -- {{{ Battery state
 baticon = wibox.widget.imagebox()
 baticon:set_image(beautiful.widget_bat)
 -- Initialize widget
 batwidget = wibox.widget.textbox()
 -- Register widget
-vicious.register(batwidget, vicious.widgets.bat, "$1$2%", 61, "BAT0")
+vicious.register(batwidget, vicious.widgets.bat, "$2%", 61, "BAT0")
 -- vicious.register(batwidget, vicious.contrib.batproc, "$1$2%", 61, "BAT0")
 -- }}}
 
@@ -123,8 +133,8 @@ fsicon = wibox.widget.imagebox()
 fsicon:set_image(beautiful.widget_fs)
 -- Initialize widgets
 fs = {
-  r = awful.widget.progressbar(), h = awful.widget.progressbar(),
-  s = awful.widget.progressbar(), b = awful.widget.progressbar()
+  r = awful.widget.progressbar(), h = awful.widget.progressbar()
+  --s = awful.widget.progressbar(), b = awful.widget.progressbar()
 }
 -- Progressbar properties
 for _, w in pairs(fs) do
@@ -140,9 +150,9 @@ end -- Enable caching
 vicious.cache(vicious.widgets.fs)
 -- Register widgets
 vicious.register(fs.r, vicious.widgets.fs, "${/ used_p}",            599)
-vicious.register(fs.h, vicious.widgets.fs, "${/home used_p}",        599)
-vicious.register(fs.s, vicious.widgets.fs, "${/var used_p}", 599)
-vicious.register(fs.b, vicious.widgets.fs, "${/tmp used_p}",  599)
+vicious.register(fs.h, vicious.widgets.fs, "${/boot used_p}",        599)
+--vicious.register(fs.s, vicious.widgets.fs, "${/var used_p}", 599)
+--vicious.register(fs.b, vicious.widgets.fs, "${/tmp used_p}",  599)
 -- }}}
 
 -- {{{ Network usage
@@ -152,11 +162,36 @@ dnicon:set_image(beautiful.widget_net)
 upicon:set_image(beautiful.widget_netup)
 -- Initialize widget
 netwidget = wibox.widget.textbox()
+--wlan0netwidget = wibox.widget.textbox()
 -- Register widget
-vicious.register(netwidget, vicious.widgets.net, '<span color="'
-  .. beautiful.fg_netdn_widget ..'">${enp0s3 down_kb}</span> <span color="'
-  .. beautiful.fg_netup_widget ..'">${enp0s3 up_kb}</span>', 3)
+--vicious.register(eth0netwidget, vicious.widgets.net, '<span color="'
+--  .. beautiful.fg_netdn_widget ..'">${eth0 down_kb}</span> <span color="'
+--  .. beautiful.fg_netup_widget ..'">${eth0 up_kb}</span>', 3)
+	
+vicious.register(netwidget, vicious.widgets.net, 
+	function (widget, args)
+		if args["{eth0 carrier}"] == 1 
+		then 
+			return '<span color="'.. beautiful.fg_netdn_widget .. '">' .. 
+				args["{eth0 down_kb}"] ..
+			'</span> <span color="' .. beautiful.fg_netup_widget .. '">'.. 
+				args["{eth0 up_kb}"] ..
+			'</span>'
+		elseif args["{wlan0 carrier}"] == 1 
+		then 
+			return '<span color="'.. beautiful.fg_netdn_widget .. '">' .. 
+                                args["{wlan0 down_kb}"] ..
+                        '</span> <span color="' .. beautiful.fg_netup_widget .. '">'.. 
+                                args["{wlan0 up_kb}"] ..
+                        '</span>'
+
+		else 
+			return  'Netwok Disabled '
+		end
+	end, 1)
 -- }}}
+
+
 
 -- {{{ Volume level
 
@@ -248,10 +283,12 @@ for s = 1, screen.count() do
     local custom_widgets =
     { 
         cpuicon, cpugraph, tzswidget, separator,
+	ramicon, ramgraph, separator,
         baticon, batwidget, separator,
         memicon, membar, separator,
         fsicon, fs.r, fs.h, fs.s, fs.b, separator,
         dnicon, netwidget, upicon, separator,
+        --dnicon, wlan0netwidget, upicon, separator,
         --volicon, volbar, volwidget, separator,
         dateicon, datewidget, separator
     }
@@ -335,7 +372,7 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
 
-    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("slock") end),
+    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end),
 
     awful.key({ modkey, "Shift" }, "o", 
 	function (c) 
@@ -373,7 +410,8 @@ globalkeys = awful.util.table.join(
     awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
 
     awful.key({ modkey }, "e", function () awful.util.spawn("nautilus") end),
-    awful.key({ modkey }, "g", function () awful.util.spawn("gedit") end),
+    --awful.key({ modkey }, "t", function () awful.util.spawn("gedit") end),
+    awful.key({ modkey }, "b", function () awful.util.spawn("chromium-browser") end),
 
     awful.key({ modkey }, "x",
               function ()
@@ -557,7 +595,7 @@ end
 autorun = true
 autorunApps =
 {
-    "nitrogen --set-zoom-fill .config/awesome/background.jpg",
+    "nitrogen --restore",
     "autocutsel -selection CLIPBOARD -fork",
     "autocutsel -selection PRIMARY -fork"
 }
@@ -588,11 +626,12 @@ function spawn_once(command, class, tag)
 	awful.util.spawn_with_shell("pgrep -u $USER -x .*" .. findme .. ".* > /dev/null || (" .. command .. ")")
 end
 
-spawn_once("chromium","Chromium","web")
+--spawn_once("chromium","Chromium","web")
 spawn_once("hexchat","Hexchat","irc")
-spawn_once("pcmanfm","Pcmanfm","explorer")
+--spawn_once("pcmanfm","Pcmanfm","explorer")
 
+awful.util.spawn_with_shell("nitrogen --restore")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet")
-awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix")
-awful.util.spawn_with_shell("/usr/bin/VBoxClient-all")
+awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix && qdbus org.kde.kmix /Mixers org.kde.KMix.MixSet.setCurrentMaster PulseAudio__Playback_Devices_1 alsa_output_pci_0000_00_1b_0_analog_stereo")
+--awful.util.spawn_with_shell("/usr/bin/VBoxClient-all")
