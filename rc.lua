@@ -101,7 +101,7 @@ cpugraph  = awful.widget.graph()
 tzswidget = wibox.widget.textbox()
 -- Graph properties
 cpugraph:set_width(40):set_height(14)
-cpugraph:set_background_color(beautiful.fg_off_widget)
+cpugraph:set_background_color(beautiful.bg_widget)
 cpugraph:set_color(gradient_colour)
 -- Register widgets
 vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
@@ -111,11 +111,8 @@ vicious.register(tzswidget, vicious.widgets.thermal, " $1C", 19, {"thermal_zone1
 -- {{{ RAM usage
 ramicon = wibox.widget.imagebox()
 ramicon:set_image(beautiful.widget_mem)
-ramgraph = awful.widget.graph()
-ramgraph:set_width(40):set_height(14)
-ramgraph:set_background_color(beautiful.fg_off_widget)
-ramgraph:set_color(gradient_color)
-vicious.register(ramgraph, vicious.widgets.mem, "$1")
+ramgraph = wibox.widget.textbox()
+vicious.register(ramgraph, vicious.widgets.mem, "$1%", 1)
 --- }}}
 
 -- {{{ Battery state
@@ -266,31 +263,32 @@ for s = 1, screen.count() do
 
     -- Create the wibox
     mywibox[s] = awful.wibox({      screen = s,
-        fg = beautiful.fg_normal, height = 18,
+        fg = beautiful.fg_normal, height = 20,
         bg = beautiful.bg_normal, position = "top",
-        border_color = beautiful.border_focus,
-        border_width = beautiful.border_width
+        border_color = beautiful.bg_normal,
+        border_width = 1
     })
 
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
     left_layout:add(taglist[s])
-    left_layout:add(layoutbox[s])
     left_layout:add(separator)
+    --left_layout:add(layoutbox[s])
+    --left_layout:add(separator)
     left_layout:add(promptbox[s])
 
     -- Widgets that are aligned to the right
     local custom_widgets =
     { 
-        cpuicon, cpugraph, tzswidget, separator,
+        separator, cpuicon, cpugraph, tzswidget, separator,
 	ramicon, ramgraph, separator,
         baticon, batwidget, separator,
-        memicon, membar, separator,
-        fsicon, fs.r, fs.h, fs.s, fs.b, separator,
+        memicon, membar, --separator,
+        fsicon, fs.r, fs.h, separator, -- fs.s, fs.b, separator,
         dnicon, netwidget, upicon, separator,
         --dnicon, wlan0netwidget, upicon, separator,
         --volicon, volbar, volwidget, separator,
-        dateicon, datewidget, separator
+        dateicon, datewidget , separator, layoutbox[s]
     }
 
     local right_layout = wibox.layout.fixed.horizontal()
