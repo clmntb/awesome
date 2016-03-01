@@ -19,16 +19,17 @@ theme.fg_normal = "#DCDCDC"
 theme.fg_focus  = "#000000"
 theme.fg_urgent = "#CC9393"
 --theme.bg_normal = "#3F3F3F"
-theme.bg_normal = "#252525"
+--theme.bg_normal = "#252525"
+theme.bg_normal = "#3C3B37"
 theme.bg_focus  = "#DCDCDC"
 theme.bg_urgent = theme.bg_normal
 -- }}}
 
 -- {{{ Borders
 theme.border_width  = 1
-theme.border_focus  = "#353535"
-theme.border_normal = "#353535"
-theme.border_marked = "#353535"
+theme.border_focus  = "#3C3B37"
+theme.border_normal = "#3C3B37"
+theme.border_marked = "#3C3B37"
 -- }}}
 
 -- {{{ Titlebars
