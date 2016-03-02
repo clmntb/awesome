@@ -62,9 +62,9 @@ layouts = {
 
 -- {{{ Tags
 tags = {
-  names  = { "term", "web", "irc", "vm", "explorer", "pentest", 7, "rss", "media" },
-  layout = { layouts[1], layouts[1], layouts[1], layouts[1], layouts[1],
-             layouts[1], layouts[1], layouts[1], layouts[1]
+  names  = { "term", "web", "irc", "vm", "explorer", "pentest", 7, "other", "media" },
+  layout = { layouts[1], layouts[6], layouts[1], layouts[6], layouts[6],
+             layouts[6], layouts[1], layouts[1], layouts[6]
 }}
 
 for s = 1, screen.count() do
@@ -191,28 +191,88 @@ vicious.register(netwidget, vicious.widgets.net,
 
 
 -- {{{ Volume level
+cardid  = 0
+channel = "Master"
+function volume (mode, widget)
+	if mode == "update" then
+              	local fd = io.popen("amixer -D pulse -- sget " .. channel)
+              	local status = fd:read("*all")
+              	fd:close()
+ 		
+		local volume = string.match(status, "(%d?%d?%d)%%")
+		volume = string.format("% 3d", volume)
+ 
+ 		status = string.match(status, "%[(o[^%]]*)%]")
+ 
+ 		if string.find(status, "on", 1, true) then
+ 			volume = volume .. "%"
+ 		else
+ 			volume = volume .. "M"
+ 		end
+ 		widget.text = volume
+ 	elseif mode == "up" then
+ 		io.popen("amixer -D pulse sset " .. channel .. " 5%+"):read("*all")
+ 		volume("update", widget)
+ 	elseif mode == "down" then
+ 		io.popen("amixer -D pulse sset " .. channel .. " 5%-"):read("*all")
+ 		volume("update", widget)
+ 	else
+ 		io.popen("amixer -D pulse sset " .. channel .. " toggle"):read("*all")
+ 		volume("update", widget)
+ 	end
+end
 
 volicon = wibox.widget.imagebox()
 volicon:set_image(beautiful.widget_vol)
 -- Initialize widgets
-volbar    = awful.widget.progressbar()
 volwidget = wibox.widget.textbox()
--- Progressbar properties
-volbar:set_vertical(true):set_ticks(true)
-volbar:set_height(12):set_width(8):set_ticks_size(2)
-volbar:set_background_color(beautiful.fg_off_widget)
-volbar:set_color(gradient_colour)
-vicious.cache(vicious.widgets.volume)
+volwidget:set_align("right")
+
+channel = "Master"
+pulse = " -D pulse "
+
 -- Register widgets
-vicious.register(volbar,    vicious.widgets.volume,  "$1",  2, "Master")
-vicious.register(volwidget, vicious.widgets.volume, " $1%", 2, "Master")
 -- Register buttons
-volbar:buttons(awful.util.table.join(
-   awful.button({ }, 1, function () exec("kmix") end),
-   awful.button({ }, 4, function () exec("amixer -D pulse -q set Master 5%+", false) end),
-   awful.button({ }, 5, function () exec("amixer -D pulse -q set Master 5%-", false) end)
-)) -- Register assigned buttons
-volwidget:buttons(volbar:buttons())
+-- Mouse buttons
+volwidget:buttons(awful.util.table.join(
+	awful.button({ }, 1, function () exec("amixer "..pulse.." set "..channel.." 1+ toggle") end),
+	awful.button({ }, 4, function () exec("amixer "..pulse.." -q set "..channel.." 5%+", false) end),
+	awful.button({ }, 5, function () exec("amixer "..pulse.." -q set "..channel.." 5%-", false) end)
+))
+
+function update_volume(widget,channel,pulse)
+   local fd = io.popen("amixer "..pulse.." sget "..channel)
+   local status = fd:read("*all")
+   fd:close()
+
+   local volume = tonumber(string.match(status, "(%d?%d?%d)%%")) / 100
+   -- volume = string.format("% 3d", volume)
+
+   status = string.match(status, "%[(o[^%]]*)%]")
+
+   -- starting colour
+   local sr, sg, sb = 0x3F, 0x3F, 0x3F
+   -- ending colour
+   local er, eg, eb = 0xDC, 0xDC, 0xCC
+
+   local ir = math.floor(volume * (er - sr) + sr)
+   local ig = math.floor(volume * (eg - sg) + sg)
+   local ib = math.floor(volume * (eb - sb) + sb)
+   interpol_colour = string.format("%.2x%.2x%.2x", ir, ig, ib)
+   if string.find(status, "on", 1, true) then
+       volume = " <span background='#" .. interpol_colour .. "'> ".. volume*100 .."% </span>"
+   else
+       volume = " <span color='red' background='#" .. interpol_colour .. "'> " .. volume*100 .. "M </span>"
+   end
+   widget:set_markup(volume)
+end
+
+update_volume(volwidget,channel,pulse)
+
+mytimer = timer({ timeout = 0.2 })
+mytimer:connect_signal("timeout", function () update_volume(volwidget,channel,pulse) end)
+mytimer:start()
+
 -- }}}
 
 -- {{{ Date and time
@@ -286,8 +346,7 @@ for s = 1, screen.count() do
         memicon, membar, --separator,
         fsicon, fs.r, fs.h, separator, -- fs.s, fs.b, separator,
         dnicon, netwidget, upicon, separator,
-        --dnicon, wlan0netwidget, upicon, separator,
-        --volicon, volbar, volwidget, separator,
+        volicon, volwidget, separator,
         dateicon, datewidget , separator, layoutbox[s]
     }
 
@@ -417,7 +476,13 @@ globalkeys = awful.util.table.join(
                   promptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end)
+              end),
+
+    awful.key({ }, "XF86AudioRaiseVolume",  function () exec("amixer -D pulse -q set Master 5%+") end),
+    awful.key({ }, "XF86AudioLowerVolume",  function () exec("amixer -D pulse -q set Master 5%-") end),
+
+    --awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end)
+    awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end)
 )
 
 clientkeys = awful.util.table.join(
@@ -433,16 +498,7 @@ clientkeys = awful.util.table.join(
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
             c.maximized_vertical   = not c.maximized_vertical
-        end),
-
-   -- Configure the hotkeys.
-   awful.key({ }, "XF86AudioRaiseVolume",  function ()
-       awful.util.spawn("amixer -D pulse set Master 5%+", false) end),
-   awful.key({ }, "XF86AudioLowerVolume",  function ()
-       awful.util.spawn("amixer -D pulse set Master 5%-", false) end),
-   awful.key({ }, "XF86AudioMute", function ()
-       awful.util.spawn("amixer -D pulse set Master 1+ toggle", false) end)
-
+        end)
 )
 
 -- Compute the maximum number of digit we need, limited to 9
@@ -631,5 +687,5 @@ spawn_once("hexchat","Hexchat","irc")
 awful.util.spawn_with_shell("nitrogen --restore")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh")
 awful.util.spawn_with_shell("pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet")
-awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix && qdbus org.kde.kmix /Mixers org.kde.KMix.MixSet.setCurrentMaster PulseAudio__Playback_Devices_1 alsa_output_pci_0000_00_1b_0_analog_stereo")
+--awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix && qdbus org.kde.kmix /Mixers org.kde.KMix.MixSet.setCurrentMaster PulseAudio__Playback_Devices_1 alsa_output_pci_0000_00_1b_0_analog_stereo")
 --awful.util.spawn_with_shell("/usr/bin/VBoxClient-all")
