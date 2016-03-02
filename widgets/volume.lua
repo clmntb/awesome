@@ -11,14 +11,6 @@ volwidget:set_align("right")
 channel = "Master"
 pulse = " -D pulse "
 
--- Register buttons
--- Mouse buttons
-volwidget:buttons(awful.util.table.join(
-        awful.button({ }, 1, function () exec("amixer "..pulse.." set "..channel.." 1+ toggle") end),
-        awful.button({ }, 4, function () exec("amixer "..pulse.." -q set "..channel.." 5%+", false) end),
-        awful.button({ }, 5, function () exec("amixer "..pulse.." -q set "..channel.." 5%-", false) end)
-))
-
 function update_volume(widget,channel,pulse)
    local fd = io.popen("amixer "..pulse.." sget "..channel)
    local status = fd:read("*all")

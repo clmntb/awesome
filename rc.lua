@@ -1,14 +1,7 @@
 -- {{{ License
---
 -- Awesome configuration, using awesome 3.5 on Arch GNU/Linux
 --   * Inspired by Adrian C. <anrxc@sysphere.org>
-
--- Screenshot: http://sysphere.org/gallery/snapshots
-
--- This work is licensed under the Creative Commons Attribution-Share
--- Alike License: http://creativecommons.org/licenses/by-sa/3.0/
 -- }}}
-
 
 -- {{{ Libraries
 awful = require("awful")
@@ -113,8 +106,8 @@ layouts = {
 -- {{{ Tags
 tags = {
   names  = { "term", "web", "irc", "vm", "explorer", "pentest", 7, "other", "media" },
-  layout = { layouts[1], layouts[6], layouts[1], layouts[6], layouts[6],
-             layouts[6], layouts[1], layouts[1], layouts[6]
+  layout = { layouts[1], layouts[1], layouts[1], layouts[1], layouts[1],
+             layouts[1], layouts[1], layouts[1], layouts[1]
 }}
 
 for s = 1, screen.count() do
@@ -147,6 +140,13 @@ require("widgets.system")
 require("widgets.network")
 require("widgets.volume")
 require("widgets.date")
+
+volwidget:buttons(awful.util.table.join(
+        awful.button({ }, 1, function () exec("amixer "..pulse.." set "..channel.." 1+ toggle") end),
+        awful.button({ }, 4, function () exec("amixer "..pulse.." -q set "..channel.." 5%+", false) end),
+        awful.button({ }, 5, function () exec("amixer "..pulse.." -q set "..channel.." 5%-", false) end)
+))
+
 -- }}}
 
 -- {{{ Wibox initialisation
