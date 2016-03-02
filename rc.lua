@@ -21,11 +21,36 @@ vicious.contrib = require("vicious.contrib")
 beautiful = require("beautiful")
 -- Wibox
 wibox = require("wibox")
---local cal = require("utils.cal")
 
-local menubar = require("menubar")
+require('freedesktop.utils')
+require("naughty")
+--local menubar = require("menubar")
 -- }}}
 
+-- {{{ Error handling
+-- Check if awesome encountered an error during startup and fell back to
+-- another config (This code will only ever execute for the fallback config)
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
+
+-- Handle runtime errors after startup
+do
+    local in_error = false
+    awesome.connect_signal("debug::error", function (err)
+        -- Make sure we don't go into an endless error loop
+        if in_error then return end
+        in_error = true
+
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = err })
+        in_error = false
+    end)
+end
+-- }}}
 
 -- {{{ Variable definitions
 local altkey = "Mod1"
@@ -40,11 +65,39 @@ beautiful.init(home .. "/.config/awesome/zenburn.lua")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm -fg black -bg white -sl 32000"
-menubar.utils.terminal = terminal
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
-menubar.menu_gen.all_menu_dirs = { "/usr/share/applications/", "/usr/local/share/applications", "~/.local/share/applications", "/opt" }
+freedesktop.utils.terminal = terminal
+freedesktop.utils.icon_theme = 'gnome' 
+require('freedesktop.menu')
+
+menu_items = freedesktop.menu.new()
+myawesomemenu = {
+     { "manual", terminal .. " -e man awesome", freedesktop.utils.lookup_icon({ icon = 'help' }) },
+     { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua", freedesktop.utils.lookup_icon({ icon = 'package_settings' }) },
+     { "restart", awesome.restart, freedesktop.utils.lookup_icon({ icon = 'gtk-refresh' }) },
+     { "quit", awesome.quit, freedesktop.utils.lookup_icon({ icon = 'gtk-quit' }) }
+}
+
+table.insert(menu_items, { "awesome", myawesomemenu, beautiful.awesome_icon })
+table.insert(menu_items, { "open terminal", terminal, freedesktop.utils.lookup_icon({icon = 'terminal'}) })
+
+mymainmenu = awful.menu.new({ items = menu_items, width = 250 })
+
+mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon ,
+                                     menu = mymainmenu
+                                   })
+
+myshutdownmenu = awful.menu({ 
+   { "shutdown", awful.util.getdir("config") .. "/scripts/shutdown.sh", freedesktop.utils.lookup_icon({ icon = 'gtk-quit'}) },
+   { "reboot", awful.util.getdir("config") .. "/scripts/reboot.sh", freedesktop.utils.lookup_icon({ icon = 'gtk-refresh'}) },
+   { "suspend", awful.util.getdir("config") .. "/scripts/suspend.sh", freedesktop.utils.lookup_icon({ icon = 'gtk-quit'}) },
+   { "hibernate", awful.util.getdir("config") .. "/scripts/hibernate.sh", freedesktop.utils.lookup_icon({ icon = 'gtk-quit'}) }
+})
+
+myshutdownlauncher = awful.widget.launcher({ image = beautiful.shutdown_icon,
+                                     menu = myshutdownmenu })
 
 -- Window management layouts
 layouts = {
@@ -135,10 +188,10 @@ for s = 1, screen.count() do
 
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(mylauncher)
+    left_layout:add(separator)
     left_layout:add(taglist[s])
     left_layout:add(separator)
-    --left_layout:add(layoutbox[s])
-    --left_layout:add(separator)
     left_layout:add(promptbox[s])
 
     -- Widgets that are aligned to the right
@@ -151,7 +204,8 @@ for s = 1, screen.count() do
         fsicon, fs.r, fs.h, separator, 
         dnicon, netwidget, upicon, separator,
         volicon, volwidget, separator,
-        dateicon, datewidget , separator, layoutbox[s]
+        dateicon, datewidget , separator, layoutbox[s], 
+	separator, myshutdownlauncher
     }
 
     local right_layout = wibox.layout.fixed.horizontal()
@@ -284,8 +338,6 @@ globalkeys = awful.util.table.join(
 
     awful.key({ }, "XF86AudioRaiseVolume",  function () exec("amixer -D pulse -q set Master 5%+") end),
     awful.key({ }, "XF86AudioLowerVolume",  function () exec("amixer -D pulse -q set Master 5%-") end),
-
-    --awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end)
     awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end)
 )
 
@@ -370,26 +422,12 @@ awful.rules.rules = {
       callback = function(c) awful.client.movetotag(tags[mouse.screen][2],c) end },
     { rule = { class = "Hexchat", instance = "hexchat" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][3],c) end },
-    { rule = { class = "Pcmanfm" },
-      callback = function(c) awful.client.movetotag(tags[mouse.screen][5],c) end },
     { rule = { class = "VirtualBox" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][4],c) end },
     { rule = { class = "Vim",    instance = "_Remember_" },
-      properties = { floating = true }, callback = awful.titlebar.add  },
-    { rule = { class = "Xmessage", instance = "xmessage" },
-      properties = { floating = true }, callback = awful.titlebar.add  },
-    { rule = { instance = "firefox-bin" },
-      properties = { floating = true }, callback = awful.titlebar.add  },
-    { rule = { name  = "Alpine" },      properties = { tag = tags[1][4]} },
-    { rule = { class = "Gajim.py" },    properties = { tag = tags[1][5]} },
-    { rule = { class = "Akregator" },   properties = { tag = tags[1][8]} },
-    { rule = { class = "Ark" },         properties = { floating = true } },
-    { rule = { class = "Geeqie" },      properties = { floating = true } },
-    { rule = { class = "ROX-Filer" },   properties = { floating = true } },
-    { rule = { class = "Pinentry.*" },  properties = { floating = true } },
+      properties = { floating = true }, callback = awful.titlebar.add  }
 }
 -- }}}
-
 
 -- {{{ Signals
 --
@@ -450,46 +488,42 @@ end
 -- }}}
 
 -- Autorun programs
+function spawn_once(command, class, tag) 
+        -- create move callback
+        local callback 
+        callback = function(c) 
+                if c.class == class then 
+                        awful.client.movetotag(tag, c) 
+                        client.remove_signal("manage", callback) 
+                end 
+        end 
+        client.add_signal("manage", callback) 
+        -- now check if not already running!     
+        local findme = command
+        local firstspace = findme:find(" ")
+        if firstspace then
+                findme = findme:sub(0, firstspace-1)
+        end
+        -- finally run it
+        awful.util.spawn_with_shell("pgrep -u $USER -x .*" .. findme .. ".* > /dev/null || (" .. command .. ")")
+end
+
 autorun = true
 autorunApps =
 {
     "nitrogen --restore",
     "autocutsel -selection CLIPBOARD -fork",
-    "autocutsel -selection PRIMARY -fork"
+    "autocutsel -selection PRIMARY -fork",
+    "pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh",
+--  "/usr/bin/VBoxClient-all",
+    "pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet"
 }
 
 if autorun then
         for _, app in pairs(autorunApps) do
-                awful.util.spawn(app)
+                awful.util.spawn_with_shell(app)
         end
+	
 end
 
-function spawn_once(command, class, tag) 
-	-- create move callback
-  	local callback 
-  	callback = function(c) 
-    		if c.class == class then 
-      			awful.client.movetotag(tag, c) 
-      			client.remove_signal("manage", callback) 
-    		end 
-  	end 
-  	client.add_signal("manage", callback) 
-  	-- now check if not already running!     
-  	local findme = command
-  	local firstspace = findme:find(" ")
-  	if firstspace then
-    		findme = findme:sub(0, firstspace-1)
-	end
-	-- finally run it
-	awful.util.spawn_with_shell("pgrep -u $USER -x .*" .. findme .. ".* > /dev/null || (" .. command .. ")")
-end
-
---spawn_once("chromium","Chromium","web")
 spawn_once("hexchat","Hexchat","irc")
---spawn_once("pcmanfm","Pcmanfm","explorer")
-
-awful.util.spawn_with_shell("nitrogen --restore")
-awful.util.spawn_with_shell("pgrep -u $USER -x .*xautolock.* > /dev/null || ~/.config/awesome/locker.sh")
-awful.util.spawn_with_shell("pgrep -u $USER -x .*nm-applet.* > /dev/null || nm-applet")
---awful.util.spawn_with_shell("pgrep -u $USER -x .*kmix.* 2> /dev/null || kmix && qdbus org.kde.kmix /Mixers org.kde.KMix.MixSet.setCurrentMaster PulseAudio__Playback_Devices_1 alsa_output_pci_0000_00_1b_0_analog_stereo")
---awful.util.spawn_with_shell("/usr/bin/VBoxClient-all")
