@@ -21,7 +21,7 @@ vicious.contrib = require("vicious.contrib")
 beautiful = require("beautiful")
 -- Wibox
 wibox = require("wibox")
-local cal = require("utils.cal")
+--local cal = require("utils.cal")
 
 local menubar = require("menubar")
 -- }}}
@@ -39,8 +39,6 @@ local sexec  = awful.util.spawn_with_shell
 beautiful.init(home .. "/.config/awesome/zenburn.lua")
 
 -- This is used later as the default terminal and editor to run.
--- A.Tabou: Increase default font size for all terminals
--- terminal = "xterm -fg white -bg black -fn -*-fixed-medium-*-*-*-14-*
 terminal = "xterm -fg black -bg white -sl 32000"
 menubar.utils.terminal = terminal
 editor = os.getenv("EDITOR") or "vim"
@@ -59,7 +57,6 @@ layouts = {
 }
 -- }}}
 
-
 -- {{{ Tags
 tags = {
   names  = { "term", "web", "irc", "vm", "explorer", "pentest", 7, "other", "media" },
@@ -70,7 +67,6 @@ tags = {
 for s = 1, screen.count() do
     tags[s] = awful.tag(tags.names, s, tags.layout)
     awful.tag.setproperty(tags[s][5], "mwfact", 0.13)
-    -- awful.tag.setproperty(tags[s][6], "hide",   true)
     awful.tag.setproperty(tags[s][7], "hide",   true)
 end
 -- }}}
@@ -93,203 +89,11 @@ gradient_colour = {type="linear", from={0, 0}, to={0, 10},
     stops={{1, colour1}, {0.5, beautiful.fg_center_widget}, {0, colour2}}}
 --- }}}
 
--- {{{ CPU usage and temperature
-cpuicon = wibox.widget.imagebox()
-cpuicon:set_image(beautiful.widget_cpu)
--- Initialize widgets
-cpugraph  = awful.widget.graph()
-tzswidget = wibox.widget.textbox()
--- Graph properties
-cpugraph:set_width(40):set_height(14)
-cpugraph:set_background_color(beautiful.bg_widget)
-cpugraph:set_color(gradient_colour)
--- Register widgets
-vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
-vicious.register(tzswidget, vicious.widgets.thermal, " $1C", 19, {"thermal_zone1", "sys"})
--- }}}
-
--- {{{ RAM usage
-ramicon = wibox.widget.imagebox()
-ramicon:set_image(beautiful.widget_mem)
-ramgraph = wibox.widget.textbox()
-vicious.register(ramgraph, vicious.widgets.mem, "$1%", 1)
---- }}}
-
--- {{{ Battery state
-baticon = wibox.widget.imagebox()
-baticon:set_image(beautiful.widget_bat)
--- Initialize widget
-batwidget = wibox.widget.textbox()
--- Register widget
-vicious.register(batwidget, vicious.widgets.bat, "$2%", 61, "BAT0")
--- vicious.register(batwidget, vicious.contrib.batproc, "$1$2%", 61, "BAT0")
--- }}}
-
--- {{{ File system usage
-fsicon = wibox.widget.imagebox()
-fsicon:set_image(beautiful.widget_fs)
--- Initialize widgets
-fs = {
-  r = awful.widget.progressbar(), h = awful.widget.progressbar()
-  --s = awful.widget.progressbar(), b = awful.widget.progressbar()
-}
--- Progressbar properties
-for _, w in pairs(fs) do
-  w:set_vertical(true):set_ticks(true)
-  w:set_height(14):set_width(5):set_ticks_size(2)
-  w:set_border_color(beautiful.border_widget)
-  w:set_background_color(beautiful.fg_off_widget)
-  w:set_color(gradient_colour)
-  --w.widget:buttons(awful.util.table.join(
-  --  awful.button({ }, 1, function () exec("rox", false) end)
-  --))
-end -- Enable caching
-vicious.cache(vicious.widgets.fs)
--- Register widgets
-vicious.register(fs.r, vicious.widgets.fs, "${/ used_p}",            599)
-vicious.register(fs.h, vicious.widgets.fs, "${/boot used_p}",        599)
---vicious.register(fs.s, vicious.widgets.fs, "${/var used_p}", 599)
---vicious.register(fs.b, vicious.widgets.fs, "${/tmp used_p}",  599)
--- }}}
-
--- {{{ Network usage
-dnicon = wibox.widget.imagebox()
-upicon = wibox.widget.imagebox()
-dnicon:set_image(beautiful.widget_net)
-upicon:set_image(beautiful.widget_netup)
--- Initialize widget
-netwidget = wibox.widget.textbox()
---wlan0netwidget = wibox.widget.textbox()
--- Register widget
---vicious.register(eth0netwidget, vicious.widgets.net, '<span color="'
---  .. beautiful.fg_netdn_widget ..'">${eth0 down_kb}</span> <span color="'
---  .. beautiful.fg_netup_widget ..'">${eth0 up_kb}</span>', 3)
-	
-vicious.register(netwidget, vicious.widgets.net, 
-	function (widget, args)
-		if args["{eth0 carrier}"] == 1 
-		then 
-			return '<span color="'.. beautiful.fg_netdn_widget .. '">' .. 
-				args["{eth0 down_kb}"] ..
-			'</span> <span color="' .. beautiful.fg_netup_widget .. '">'.. 
-				args["{eth0 up_kb}"] ..
-			'</span>'
-		elseif args["{wlan0 carrier}"] == 1 
-		then 
-			return '<span color="'.. beautiful.fg_netdn_widget .. '">' .. 
-                                args["{wlan0 down_kb}"] ..
-                        '</span> <span color="' .. beautiful.fg_netup_widget .. '">'.. 
-                                args["{wlan0 up_kb}"] ..
-                        '</span>'
-
-		else 
-			return  'Netwok Disabled '
-		end
-	end, 1)
--- }}}
-
-
-
--- {{{ Volume level
-cardid  = 0
-channel = "Master"
-function volume (mode, widget)
-	if mode == "update" then
-              	local fd = io.popen("amixer -D pulse -- sget " .. channel)
-              	local status = fd:read("*all")
-              	fd:close()
- 		
-		local volume = string.match(status, "(%d?%d?%d)%%")
-		volume = string.format("% 3d", volume)
- 
- 		status = string.match(status, "%[(o[^%]]*)%]")
- 
- 		if string.find(status, "on", 1, true) then
- 			volume = volume .. "%"
- 		else
- 			volume = volume .. "M"
- 		end
- 		widget.text = volume
- 	elseif mode == "up" then
- 		io.popen("amixer -D pulse sset " .. channel .. " 5%+"):read("*all")
- 		volume("update", widget)
- 	elseif mode == "down" then
- 		io.popen("amixer -D pulse sset " .. channel .. " 5%-"):read("*all")
- 		volume("update", widget)
- 	else
- 		io.popen("amixer -D pulse sset " .. channel .. " toggle"):read("*all")
- 		volume("update", widget)
- 	end
-end
-
-volicon = wibox.widget.imagebox()
-volicon:set_image(beautiful.widget_vol)
--- Initialize widgets
-volwidget = wibox.widget.textbox()
-volwidget:set_align("right")
-
-channel = "Master"
-pulse = " -D pulse "
-
--- Register widgets
--- Register buttons
--- Mouse buttons
-volwidget:buttons(awful.util.table.join(
-	awful.button({ }, 1, function () exec("amixer "..pulse.." set "..channel.." 1+ toggle") end),
-	awful.button({ }, 4, function () exec("amixer "..pulse.." -q set "..channel.." 5%+", false) end),
-	awful.button({ }, 5, function () exec("amixer "..pulse.." -q set "..channel.." 5%-", false) end)
-))
-
-function update_volume(widget,channel,pulse)
-   local fd = io.popen("amixer "..pulse.." sget "..channel)
-   local status = fd:read("*all")
-   fd:close()
-
-   local volume = tonumber(string.match(status, "(%d?%d?%d)%%")) / 100
-   -- volume = string.format("% 3d", volume)
-
-   status = string.match(status, "%[(o[^%]]*)%]")
-
-   -- starting colour
-   local sr, sg, sb = 0x3F, 0x3F, 0x3F
-   -- ending colour
-   local er, eg, eb = 0xDC, 0xDC, 0xCC
-
-   local ir = math.floor(volume * (er - sr) + sr)
-   local ig = math.floor(volume * (eg - sg) + sg)
-   local ib = math.floor(volume * (eb - sb) + sb)
-   interpol_colour = string.format("%.2x%.2x%.2x", ir, ig, ib)
-   if string.find(status, "on", 1, true) then
-       volume = " <span background='#" .. interpol_colour .. "'> ".. volume*100 .."% </span>"
-   else
-       volume = " <span color='red' background='#" .. interpol_colour .. "'> " .. volume*100 .. "M </span>"
-   end
-   widget:set_markup(volume)
-end
-
-update_volume(volwidget,channel,pulse)
-
-mytimer = timer({ timeout = 0.2 })
-mytimer:connect_signal("timeout", function () update_volume(volwidget,channel,pulse) end)
-mytimer:start()
-
--- }}}
-
--- {{{ Date and time
-dateicon = wibox.widget.imagebox()
-dateicon:set_image(beautiful.widget_date)
--- Initialize widget
-datewidget = wibox.widget.textbox()
--- Register widget
-vicious.register(datewidget, vicious.widgets.date, "%b %d, %R", 60)
---vicious.register(datewidget, vicious.widgets.date, "%R ", 61)
--- Register buttons
-datewidget:buttons(awful.util.table.join(
-  awful.button({ }, 1, function () exec("pylendar.py") end)
-))
-
-cal.register(datewidget)
-
+-- {{{ Widget imports 
+require("widgets.system")
+require("widgets.network")
+require("widgets.volume")
+require("widgets.date")
 -- }}}
 
 -- {{{ Wibox initialisation
@@ -343,8 +147,8 @@ for s = 1, screen.count() do
         separator, cpuicon, cpugraph, tzswidget, separator,
 	ramicon, ramgraph, separator,
         baticon, batwidget, separator,
-        memicon, membar, --separator,
-        fsicon, fs.r, fs.h, separator, -- fs.s, fs.b, separator,
+        memicon, membar, 
+        fsicon, fs.r, fs.h, separator, 
         dnicon, netwidget, upicon, separator,
         volicon, volwidget, separator,
         dateicon, datewidget , separator, layoutbox[s]
