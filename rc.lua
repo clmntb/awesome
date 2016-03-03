@@ -78,7 +78,7 @@ table.insert(menu_items, { "open terminal", terminal, freedesktop.utils.lookup_i
 
 mymainmenu = awful.menu.new({ items = menu_items, width = 250 })
 
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon ,
+mylauncher = awful.widget.launcher({ image = beautiful.menu_icon ,
                                      menu = mymainmenu
                                    })
 
@@ -122,9 +122,11 @@ end
 --
 -- {{{ Widgets configuration
 --
--- {{{ Reusable separator
+-- {{{ Reusable separators
 separator = wibox.widget.imagebox()
 separator:set_image(beautiful.widget_sep)
+separator2 = wibox.widget.imagebox()
+separator2:set_image(beautiful.widget_sep_empty)
 -- }}}
 
 -- {{{ Define gradient to be used
@@ -188,6 +190,7 @@ for s = 1, screen.count() do
 
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(separator2)
     left_layout:add(mylauncher)
     left_layout:add(separator)
     left_layout:add(taglist[s])
@@ -204,8 +207,11 @@ for s = 1, screen.count() do
         fsicon, fs.r, fs.h, separator, 
         dnicon, netwidget, upicon, separator,
         volicon, volwidget, separator,
-        dateicon, datewidget , separator, layoutbox[s], 
-	separator, myshutdownlauncher
+        dateicon, datewidget , separator2, separator, separator2, 
+	layoutbox[s], 
+	separator, separator2, 
+	myshutdownlauncher,
+	separator2, separator2
     }
 
     local right_layout = wibox.layout.fixed.horizontal()
@@ -321,7 +327,7 @@ globalkeys = awful.util.table.join(
     keydoc.group("Custom"),
     awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end, "Lock Screen"),
     awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end, "Run a command"),
-    awful.key({ modkey }, 	     "e", function () awful.util.spawn("nautilus") end, "Open file explorer"),
+    awful.key({ modkey }, 	     "e", function () awful.util.spawn("nautilus --no-desktop") end, "Open file explorer"),
     awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium-browser") end, "Open web browser"),
 
     keydoc.group("Multimedia"),

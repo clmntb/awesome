@@ -78,7 +78,8 @@ theme.taglist_squares_unsel = theme.confdir .. "/icons/taglist/squareza.png"
 -- }}}
 
 -- {{{ Misc icons
-theme.awesome_icon           = theme.confdir .. "/menu.png"
+theme.awesome_icon           = theme.confdir .. "/icons/awesome.png"
+theme.menu_icon		     = theme.confdir .. "/menu.png"
 theme.shutdown_icon	     = theme.confdir .. "/system-shutdown.png"
 -- }}}
 
@@ -111,6 +112,7 @@ theme.widget_org    = theme.confdir .. "/icons/cal.png"
 theme.widget_date   = theme.confdir .. "/icons/time.png"
 theme.widget_crypto = theme.confdir .. "/icons/crypto.png"
 theme.widget_sep    = theme.confdir .. "/icons/separator.png"
+theme.widget_sep_empty    = theme.confdir .. "/icons/separator_empty.png"
 -- }}}
 
 -- {{{ Titlebar icons
