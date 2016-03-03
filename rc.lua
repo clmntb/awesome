@@ -17,7 +17,6 @@ wibox = require("wibox")
 
 require('freedesktop.utils')
 require("naughty")
---local menubar = require("menubar")
 -- }}}
 
 -- {{{ Error handling
