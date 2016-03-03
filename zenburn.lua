@@ -139,5 +139,4 @@ theme.titlebar_maximized_button_normal_inactive = theme.confdir .. "/icons/title
 -- }}}
 -- }}}
 
-
 return theme

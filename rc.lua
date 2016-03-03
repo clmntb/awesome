@@ -17,6 +17,7 @@ wibox = require("wibox")
 
 require('freedesktop.utils')
 require("naughty")
+require("keydoc")
 -- }}}
 
 -- {{{ Error handling
@@ -240,42 +241,45 @@ clientbuttons = awful.util.table.join(
 
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
-    awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
-    awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
-    awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
 
-    awful.key({ modkey,		  }, "p", function () menubar.show() end),
+    keydoc.group('Layout manipulation'),
+
+    awful.key({ modkey,           }, "Left",   awful.tag.viewprev       , 'View previous tag'),
+    awful.key({ modkey,           }, "Right",  awful.tag.viewnext       , 'View next tag'),
+    awful.key({ modkey,           }, "Escape", awful.tag.history.restore, 'Focus previously selected tag set'),
+
+    keydoc.group('Client manipulation'),
 
     awful.key({ modkey,           }, "j",
         function ()
             awful.client.focus.byidx( 1)
             if client.focus then client.focus:raise() end
-        end),
+        end, "Swap with next window"),
     awful.key({ modkey,           }, "k",
         function ()
             awful.client.focus.byidx(-1)
             if client.focus then client.focus:raise() end
-        end),
+        end, "Swap with previous window"),
     awful.key({ modkey,           }, "w", function () mymainmenu:show({keygrabber=true}) end),
 
     -- Layout manipulation
-    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end),
-    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
-    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
+    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end, 'Rotate clients around in a tag next'),
+    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end, 'Rotate clients around in a tag previous'),
+    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end, 'Focus next screen'),
+    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end, 'Focus previous screen'),
+    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto, 'Focus first urgent client'),
     awful.key({ modkey,           }, "Tab",
         function ()
             awful.client.focus.history.previous()
             if client.focus then
                 client.focus:raise()
             end
-        end),
+        end, 'Tab through client history'),
 
     -- Standard program
-    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
-    awful.key({ modkey, "Control" }, "r", awesome.restart),
-    awful.key({ modkey, "Shift"   }, "q", awesome.quit),
+    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end, "Spawn a terminal"),
+    awful.key({ modkey, "Control" }, "r", awesome.restart, "Reload awesome"),
+    awful.key({ modkey, "Shift"   }, "q", awesome.quit, "Quit awesome"),
 
     awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
     awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
@@ -283,10 +287,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
     awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
-    awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
-    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
-
-    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end),
+    awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end, "Switch to next layout"),
+    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end, "Switch to previous layout"),
 
     awful.key({ modkey, "Shift" }, "o", 
 	function (c) 
@@ -297,7 +299,7 @@ globalkeys = awful.util.table.join(
         	end
         	awful.client.movetotag(tags[nextscreen][currenttag],c)
        	 	awful.tag.viewonly(tags[nextscreen][currenttag])
-    	end),
+    	end, "Send current window to next screen"),
 
     awful.key( -- restore minimized windows
         {modkey, "Shift"}, "n",
@@ -316,16 +318,16 @@ globalkeys = awful.util.table.join(
         end
     ),
 
-    -- Prompt
-    awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end),
+    keydoc.group("Custom"),
+    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end, "Lock Screen"),
+    awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end, "Run a command"),
+    awful.key({ modkey }, 	     "e", function () awful.util.spawn("nautilus") end, "Open file explorer"),
+    awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium-browser") end, "Open web browser"),
 
-    awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
-    awful.key({ "Control" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -u '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
-    awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end),
-
-    awful.key({ modkey }, "e", function () awful.util.spawn("nautilus") end),
-    --awful.key({ modkey }, "t", function () awful.util.spawn("gedit") end),
-    awful.key({ modkey }, "b", function () awful.util.spawn("chromium-browser") end),
+    keydoc.group("Multimedia"),
+    awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot"), 
+    awful.key({ "Control" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -u '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot of current window"),
+    awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot of an area"),
 
     awful.key({ modkey }, "x",
               function ()
@@ -337,23 +339,24 @@ globalkeys = awful.util.table.join(
 
     awful.key({ }, "XF86AudioRaiseVolume",  function () exec("amixer -D pulse -q set Master 5%+") end),
     awful.key({ }, "XF86AudioLowerVolume",  function () exec("amixer -D pulse -q set Master 5%-") end),
-    awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end)
+    awful.key({ }, "XF86AudioMute", function () exec("amixer -D pulse -q set Master 1+ toggle") end),
+    awful.key({ modkey, }, "F1", keydoc.display)
 )
 
 clientkeys = awful.util.table.join(
-    awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
-    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
-    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ),
-    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
-    awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
-    -- awful.key({ modkey, "Shift"   }, "r",      function (c) c:redraw()                       end),
-    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
-    awful.key({ modkey,           }, "n",      function (c) c.minimized = not c.minimized    end),
+    keydoc.group('Client keys'),
+    awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end, "Fullscreen"),
+    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end, "Close"),
+    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     , "Toggle Floating"),
+    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end, "Swap"),
+    awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        , "Move to screen"),
+    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end, "On top"),
+    awful.key({ modkey,           }, "n",      function (c) c.minimized = not c.minimized    end, "Minimize"),
     awful.key({ modkey,           }, "m",
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
             c.maximized_vertical   = not c.maximized_vertical
-        end)
+        end, "Maximize")
 )
 
 -- Compute the maximum number of digit we need, limited to 9
