@@ -29,9 +29,9 @@ function update_volume(widget,channel,pulse)
    local ib = math.floor(volume * (eb - sb) + sb)
    interpol_colour = string.format("%.2x%.2x%.2x", ir, ig, ib)
    if string.find(status, "on", 1, true) then
-       volume = " <span color='".. beautiful.fg_normal .."'> ".. volume*100 .."% </span>"
+       volume = " <span color='".. beautiful.fg_normal .."'>".. volume*100 .."% </span>"
    else
-       volume = " <span color='red'> " .. volume*100 .. "M </span>"
+       volume = " <span color='red'>" .. volume*100 .. "M </span>"
    end
    widget:set_markup(volume)
 end
