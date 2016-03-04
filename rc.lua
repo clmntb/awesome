@@ -207,11 +207,11 @@ for s = 1, screen.count() do
         fsicon, fs.r, fs.h, separator, 
         dnicon, netwidget, upicon, separator,
         volicon, volwidget, separator,
-        dateicon, datewidget , separator2, separator, separator2, 
+        dateicon, datewidget , separator2, separator, 
 	layoutbox[s], 
-	separator, separator2, 
+	separator, 
 	myshutdownlauncher,
-	separator2, separator2
+	separator2
     }
 
     local right_layout = wibox.layout.fixed.horizontal()
@@ -446,7 +446,9 @@ awful.rules.rules = {
     { rule = { class = "Firefox", instance = "Places" },
       properties = { floating = true } },
     { rule = { class = "nautilus" },
-      properties = { floating = true, maximized_vertical = true, maximized_horizontal = false }}
+      properties = { floating = true, maximized_vertical = true, maximized_horizontal = false }},
+    { rule = { class = "gimp" },
+      properties = { floating = true, maximized_vertical = false, maximized_horizontal = false }}
 }
 -- }}}
 
