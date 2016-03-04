@@ -327,7 +327,7 @@ globalkeys = awful.util.table.join(
     keydoc.group("Custom"),
     awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end, "Lock Screen"),
     awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end, "Run a command"),
-    awful.key({ modkey }, 	     "e", function () awful.util.spawn("nautilus --no-desktop") end, "Open file explorer"),
+    awful.key({ modkey }, 	     "e", function () awful.util.spawn_with_shell("nautilus --new-window --no-desktop") end, "Open file explorer"),
     awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium-browser") end, "Open web browser"),
 
     keydoc.group("Multimedia"),
@@ -416,11 +416,13 @@ root.keys(globalkeys)
 
 -- {{{ Rules
 awful.rules.rules = {
-    { rule = { }, properties = {
-      focus = true,      size_hints_honor = false,
-      keys = clientkeys, buttons = clientbuttons,
-      border_width = beautiful.border_width,
-      border_color = beautiful.border_normal }
+    { 	rule = { }, 
+	properties = {
+      		focus = true,      size_hints_honor = false,
+      		keys = clientkeys, buttons = clientbuttons,
+      		border_width = beautiful.border_width,
+      		border_color = beautiful.border_normal 
+	}
     },
     { rule = { class = "Firefox" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][6],c) end },
@@ -433,7 +435,18 @@ awful.rules.rules = {
     { rule = { class = "VirtualBox" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][4],c) end },
     { rule = { class = "Vim",    instance = "_Remember_" },
-      properties = { floating = true }, callback = awful.titlebar.add  }
+      properties = { floating = true }, callback = awful.titlebar.add  },
+
+    { rule = { class = "Firefox", instance = "Download" },
+      properties = { floating = true } },
+    { rule = { class = "Firefox", instance = "Browser" },
+      properties = { floating = true } },
+    { rule = { class = "Firefox", instance = "Toplevel" },
+      properties = { floating = true } },
+    { rule = { class = "Firefox", instance = "Places" },
+      properties = { floating = true } },
+    { rule = { class = "nautilus" },
+      properties = { floating = true, maximized_vertical = true, maximized_horizontal = false }}
 }
 -- }}}
 
