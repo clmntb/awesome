@@ -325,10 +325,10 @@ globalkeys = awful.util.table.join(
     ),
 
     keydoc.group("Custom"),
-    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("dm-tool lock") end, "Lock Screen"),
+    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("i3lock-fancy") end, "Lock Screen"),
     awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end, "Run a command"),
     awful.key({ modkey }, 	     "e", function () awful.util.spawn_with_shell("nautilus --new-window --no-desktop") end, "Open file explorer"),
-    awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium-browser") end, "Open web browser"),
+    awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium") end, "Open web browser"),
 
     keydoc.group("Multimedia"),
     awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot"), 
