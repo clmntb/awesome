@@ -57,7 +57,8 @@ local sexec  = awful.util.spawn_with_shell
 beautiful.init(home .. "/.config/awesome/zenburn.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xterm -fg black -bg white -sl 32000"
+--terminal = "xterm -fg black -bg white -sl 32000"
+terminal = "xterm -sl 32000"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -327,13 +328,13 @@ globalkeys = awful.util.table.join(
     keydoc.group("Custom"),
     awful.key({ altkey, "Control" }, "l", function () awful.util.spawn("i3lock-fancy") end, "Lock Screen"),
     awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end, "Run a command"),
-    awful.key({ modkey }, 	     "e", function () awful.util.spawn_with_shell("nautilus --new-window --no-desktop") end, "Open file explorer"),
+    awful.key({ modkey }, 	     "e", function () awful.util.spawn_with_shell("pcmanfm") end, "Open file explorer"),
     awful.key({ modkey }, 	     "b", function () awful.util.spawn("chromium") end, "Open web browser"),
 
     keydoc.group("Multimedia"),
-    awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot"), 
-    awful.key({ "Control" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -u '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot of current window"),
-    awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/cberland/Images/screenshots/'") end, "Take a screenshot of an area"),
+    awful.key({ }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/clement/Images/screenshots/'") end, "Take a screenshot"), 
+    awful.key({ "Control" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -u '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/clement/Images/screenshots/'") end, "Take a screenshot of current window"),
+    awful.key({ "Shift" }, "Print", function () awful.util.spawn_with_shell("sleep 0.5 && scrot -s '%Y-%m-%d_%H:%M:%S_capture.png' -e 'mv $f /home/clement/Images/screenshots/'") end, "Take a screenshot of an area"),
 
     awful.key({ modkey }, "x",
               function ()
@@ -430,7 +431,7 @@ awful.rules.rules = {
       callback = function(c) awful.client.movetotag(tags[mouse.screen][1],c) end },
     { rule = { class = "chromium" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][2],c) end },
-    { rule = { class = "Hexchat", instance = "hexchat" },
+    { rule = { class = "Xchat", instance = "xchat" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][3],c) end },
     { rule = { class = "VirtualBox" },
       callback = function(c) awful.client.movetotag(tags[mouse.screen][4],c) end },
@@ -549,4 +550,4 @@ if autorun then
 	
 end
 
-spawn_once("hexchat","Hexchat","irc")
+spawn_once("xchat","xchat","irc")
