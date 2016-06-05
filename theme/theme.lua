@@ -18,21 +18,22 @@ theme.font      = "sans 8"
 theme.fg_normal = "#DCDCCC"
 theme.fg_focus  = "#F0DFAF"
 theme.fg_urgent = "#CC9393"
-theme.bg_normal = "#3F3F3F"
+theme.bg_normal = "#002b36"
+-- theme.bg_normal = "#3F3F3F"
 theme.bg_focus  = "#1E2320"
-theme.bg_urgent = "#3F3F3F"
+theme.bg_urgent = "#002b36"
 -- }}}
 
 -- {{{ Borders
 theme.border_width  = "2"
-theme.border_normal = "#3F3F3F"
+theme.border_normal = "#002b36"
 theme.border_focus  = "#6F6F6F"
 theme.border_marked = "#CC9393"
 -- }}}
 
 -- {{{ Titlebars
-theme.titlebar_bg_focus  = "#3F3F3F"
-theme.titlebar_bg_normal = "#3F3F3F"
+theme.titlebar_bg_focus  = "#002b36"
+theme.titlebar_bg_normal = "#002B36"
 -- }}}
 
 -- There are other variable sets

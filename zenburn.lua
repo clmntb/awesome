@@ -20,16 +20,16 @@ theme.fg_focus  = "#000000"
 theme.fg_urgent = "#CC9393"
 --theme.bg_normal = "#3F3F3F"
 --theme.bg_normal = "#252525"
-theme.bg_normal = "#3C3B37"
+theme.bg_normal = "#02151A"
 theme.bg_focus  = "#DCDCDC"
 theme.bg_urgent = theme.bg_normal
 -- }}}
 
 -- {{{ Borders
 theme.border_width  = 1
-theme.border_focus  = "#3C3B37"
-theme.border_normal = "#3C3B37"
-theme.border_marked = "#3C3B37"
+theme.border_focus  = theme.bg_normal
+theme.border_normal = theme.bg_normal
+theme.border_marked = theme.bg_normal
 -- }}}
 
 -- {{{ Titlebars
@@ -44,8 +44,8 @@ theme.fg_center_widget = "#88A175"
 theme.fg_end_widget    = "#FF5656"
 theme.fg_off_widget    = "#494B4F"
 theme.fg_netup_widget  = "#7F9F7F"
-theme.fg_netdn_widget  = "#CC9393" 
-theme.bg_widget        = "#353535"
+theme.fg_netdn_widget  = "#CC9393"
+theme.bg_widget        = "#073642"
 theme.border_widget    = theme.bg_normal
 -- }}}
 
