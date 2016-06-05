@@ -205,7 +205,7 @@ for s = 1, screen.count() do
 	ramicon, ramgraph, separator,
         baticon, batwidget, separator,
         memicon, membar, 
-        fsicon, fs.r, fs.h, separator, 
+        fsicon, fs.r, fs.h, fs.b, separator, 
         dnicon, netwidget, upicon, separator,
         volicon, volwidget, separator,
         dateicon, datewidget , separator2, separator, 

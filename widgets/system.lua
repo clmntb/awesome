@@ -37,8 +37,8 @@ fsicon = wibox.widget.imagebox()
 fsicon:set_image(beautiful.widget_fs)
 -- Initialize widgets
 fs = {
-  r = awful.widget.progressbar(), h = awful.widget.progressbar()
-  --s = awful.widget.progressbar(), b = awful.widget.progressbar()
+  r = awful.widget.progressbar(), h = awful.widget.progressbar(),
+  b = awful.widget.progressbar()
 }
 -- Progressbar properties
 for _, w in pairs(fs) do
@@ -54,5 +54,6 @@ end -- Enable caching
 vicious.cache(vicious.widgets.fs)
 -- Register widgets
 vicious.register(fs.r, vicious.widgets.fs, "${/ used_p}",            599)
-vicious.register(fs.h, vicious.widgets.fs, "${/boot used_p}",        599)
+vicious.register(fs.h, vicious.widgets.fs, "${/home used_p}",        599)
+vicious.register(fs.b, vicious.widgets.fs, "${/boot used_p}",        599)
 -- }}}
